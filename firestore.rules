@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: jobs
+    // Fields: title, company, location, description, salary, pqe, practiceArea, sourcePlatform, jobUrl, status, createdAt
+    //
+    // Collection: candidates
+    // Fields: name, email, phone, location, currentFirm, practiceArea, pqeYears, profileSummary, profileUrl, skills, experience, status, cvPath, createdAt
+    //
+    // Collection: clients
+    // Fields: name, industry, contactPerson, email, status, createdAt
+    //
+    // Collection: matches
+    // Fields: jobId, candidateId, baselineScore, llmScore, matchReasons, matchSummary, status, createdAt
+    //
+    // Collection: pipeline
+    // Fields: candidateId, jobId, stage, updatedAt
+    //
+    // Collection: notes
+    // Fields: candidateId, author, content, createdAt
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "emily@cancelcosts.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidJob(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.company is string && data.company.size() > 0 && data.company.size() < 200;
+    }
+
+    function isValidCandidate(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100;
+    }
+
+    function isValidClient(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /jobs/{jobId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidJob(request.resource.data);
+    }
+
+    match /candidates/{candidateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidCandidate(request.resource.data);
+    }
+
+    match /clients/{clientId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidClient(request.resource.data);
+    }
+
+    match /matches/{matchId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /pipeline/{pipelineId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /notes/{noteId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /discovery/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /staff/{staffId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

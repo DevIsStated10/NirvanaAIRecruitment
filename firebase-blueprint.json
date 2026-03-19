@@ -1,0 +1,149 @@
+{
+  "entities": {
+    "Job": {
+      "title": "Job",
+      "description": "A job opening in the legal sector.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "company": { "type": "string" },
+        "location": { "type": "string" },
+        "description": { "type": "string" },
+        "salary": { "type": "string" },
+        "pqe": { "type": "string" },
+        "practiceArea": { "type": "string" },
+        "sourcePlatform": { "type": "string" },
+        "jobUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Closed", "On Hold"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "company"]
+    },
+    "Candidate": {
+      "title": "Candidate",
+      "description": "A legal professional candidate.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "currentFirm": { "type": "string" },
+        "practiceArea": { "type": "string" },
+        "pqeYears": { "type": "integer" },
+        "profileSummary": { "type": "string" },
+        "profileUrl": { "type": "string" },
+        "skills": { "type": "string" },
+        "experience": { "type": "string" },
+        "status": { "type": "string", "enum": ["New", "Active", "Passive", "Placed"] },
+        "cvPath": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "A law firm or corporate client.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "industry": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "Match": {
+      "title": "Match",
+      "description": "A match between a job and a candidate.",
+      "type": "object",
+      "properties": {
+        "jobId": { "type": "string" },
+        "candidateId": { "type": "string" },
+        "baselineScore": { "type": "number" },
+        "llmScore": { "type": "number" },
+        "matchReasons": { "type": "string" },
+        "matchSummary": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Reviewed", "Shortlisted", "Rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["jobId", "candidateId"]
+    },
+    "PipelineStage": {
+      "title": "PipelineStage",
+      "description": "A stage in the recruitment pipeline for a candidate and job.",
+      "type": "object",
+      "properties": {
+        "candidateId": { "type": "string" },
+        "jobId": { "type": "string" },
+        "stage": { "type": "string", "enum": ["Applied", "Screening", "Interview", "Offer", "Placed", "Rejected"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["candidateId", "jobId", "stage"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "A note about a candidate.",
+      "type": "object",
+      "properties": {
+        "candidateId": { "type": "string" },
+        "author": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["candidateId", "content"]
+    },
+    "DiscoveredItem": {
+      "title": "DiscoveredItem",
+      "description": "An item discovered via the discovery engine.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["Job", "Candidate"] },
+        "title": { "type": "string" },
+        "company": { "type": "string" },
+        "location": { "type": "string" },
+        "url": { "type": "string" },
+        "source": { "type": "string" },
+        "confidence": { "type": "number" },
+        "status": { "type": "string", "enum": ["New", "Imported", "Ignored"] },
+        "discoveredAt": { "type": "string", "format": "date-time" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["type", "title", "url"]
+    },
+    "Staff": {
+      "title": "Staff",
+      "description": "An incumbent staff member.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "practiceArea": { "type": "string" },
+        "pqe": { "type": "string" },
+        "location": { "type": "string" },
+        "firm": { "type": "string" },
+        "performanceRating": { "type": "string" },
+        "tenure": { "type": "string" },
+        "skills": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["name", "role", "practiceArea"]
+    }
+  },
+  "firestore": {
+    "jobs": { "schema": "Job", "description": "Collection of job openings." },
+    "candidates": { "schema": "Candidate", "description": "Collection of candidates." },
+    "clients": { "schema": "Client", "description": "Collection of clients." },
+    "matches": { "schema": "Match", "description": "Collection of job-candidate matches." },
+    "pipeline": { "schema": "PipelineStage", "description": "Recruitment pipeline stages." },
+    "notes": { "schema": "Note", "description": "Notes on candidates." },
+    "discovery": { "schema": "DiscoveredItem", "description": "Collection of discovered items." },
+    "staff": { "schema": "Staff", "description": "Collection of incumbent staff members." }
+  }
+}
